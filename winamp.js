@@ -355,17 +355,16 @@ function Winamp () {
     this.nodes.winamp.addEventListener('drop', this.drop);
 
     this.startFileViaReference = function(fileReference) {
-        var objectUrl = URL.createObjectURL(fileReference);
-        self.startFile(objectUrl, fileReference.name);
+        self.startFile(fileReference, fileReference.name);
     }
 
     this.startFile = function(file, fileName) {
-        self.loadFile(file, fileName);
+        self.loadFileObject(file, fileName);
         self.media.play();
         self.setStatus('play');
     }
 
-    this.loadFile = function(file, fileName) {
+    this.loadFile = function(file, fileName = '') {
         this.media.loadFile(file);
         fileName += '  ***  '
         this.font.setNodeToString(document.getElementById('song-title'), fileName)
