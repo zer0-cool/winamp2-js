@@ -1,6 +1,7 @@
 // Dynamically set the css background images for all the sprites
 SkinManager = function() {
     var self = this;
+    this.fileManager = new FileManager();
 
     this._skinImages = {
         "#winamp": "MAIN.BMP",
@@ -34,33 +35,38 @@ SkinManager = function() {
         ".shade #position::-moz-range-thumb": "TITLEBAR.BMP",
     }
 
-    // For local dev, we want to use the asset we have locally
-    this.useLocalDefaultSkin = function() {
-        self.setSkinByUrl('skins/default');
-    }
+    // Given a file of an original Winamp WSZ file, set the current skin
+    this.setSkinByFileReference = function(fileReference) {
+        this.fileManager.bufferFromFileReference(fileReference, this._setSkinByBuffer);
+    }.bind(this)
 
-    // I have a collection of skins on GitHub to make loading remote skins
-    // easier. rawgit.com changes this into a free CDN
-    this.setSkinByName = function(name) {
-        url = "https://cdn.rawgit.com/captbaritone/winamp-skins/master/v2/" + name;
-        self.setSkinByUrl(url);
-    }
+    // Given the url of an original Winamp WSZ file, set the current skin
+    this.setSkinByUrl = function(url) {
+        this.fileManager.bufferFromUrl(url, this._setSkinByBuffer);
+    }.bind(this)
 
-    // Given the URL of a skin directory, set the current skin
-    this.setSkinByUrl = function(skinPath) {
-        // Make sure we have a trailing slash. Two slashes are > than none
-        skinPath += "/";
+    // Given a bufferArray containing a Winamp WSZ file, set the current skin
+    this._setSkinByBuffer = function(buffer) {
+        var zip = new JSZip(buffer);
 
         var style = document.getElementById('skin');
-        // XXX Ideally we would empty the style tag here, but I don't know how.
+        // XXX Ideally we would empty the style tag here, but I don't know how
         // Appending overwrites, which has the same net effect, but after
         // several skin changes, this tag will get pretty bloated.
         var cssRules = '';
         for(var selector in self._skinImages) {
-            var imagePath = skinPath + self._skinImages[selector];
-            var value = "background-image: url(" + imagePath + ");";
-            cssRules += selector + "{" + value + "}\n";
-            style.appendChild(document.createTextNode(cssRules));
+
+            var file = zip.filter(function (relativePath, file){
+                return new RegExp("(^|/)" + self._skinImages[selector], 'i').test(relativePath)
+            })[0];
+
+            if (!file) {
+                console.log("Warning: Couldn't find file:" + self._skinImages[selector])
+            } else {
+                var value = "background-image: url(data:image/bmp;base64," + btoa(file.asBinary()) + ")"
+                cssRules += selector + "{" + value + "}\n";
+            }
         }
+        style.appendChild(document.createTextNode(cssRules));
     }
 }
