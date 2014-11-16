@@ -17,6 +17,8 @@ function Media (audioId) {
 }
 
 Media.prototype.loadFileObject = function(file) {
+    this.callbacks.waiting();
+
     var reader = new FileReader();
 
     // Error function for decodeAudioData
@@ -35,7 +37,6 @@ Media.prototype.loadFileObject = function(file) {
         //console.error(e);
     };
 
-    this.callbacks.waiting();
     // Read the file
     reader.readAsArrayBuffer(file);
 }
@@ -43,7 +44,7 @@ Media.prototype.loadFileObject = function(file) {
 Media.prototype.loadBuffer = function(buffer) {
     this.buffer = buffer;
     this._draw();
-    this.play();
+    this.play(0);
 }
 
 Media.prototype.connect = function() {
