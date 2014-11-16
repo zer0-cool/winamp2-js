@@ -359,13 +359,14 @@ function Winamp () {
     }
 
     this.startFile = function(file, fileName) {
-        self.loadFileObject(file, fileName);
-        self.media.play();
+        self.loadFile(file, fileName);
+        //self.media.play();
         self.setStatus('play');
     }
 
-    this.loadFile = function(file, fileName = '') {
-        this.media.loadFile(file);
+    this.loadFile = function(file, fileName) {
+        filename = typeof filename !== 'undefined' ? filename : '';
+        this.media.loadFileObject(file);
         fileName += '  ***  '
         this.font.setNodeToString(document.getElementById('song-title'), fileName)
         this.font.setNodeToString(document.getElementById('kbps'), "128")
@@ -406,7 +407,7 @@ function Winamp () {
         setTimeout(function () {
             var text = self.nodes.songTitle.firstChild;
             // Only scroll if the text is too long
-            if(text.childNodes.length > 30) {
+            if(text && text.childNodes.length > 30) {
                 var characterNode = text.firstChild;
                 text.removeChild(characterNode);
                 text.appendChild(characterNode);
@@ -486,7 +487,7 @@ winamp = new Winamp();
 // XXX These should be moved to a constructor, but I can't figure out how
 winamp.setVolume(volume);
 winamp.setBalance(balance);
-winamp.loadFile(file, fileName);
+//winamp.loadFile(file, fileName);
 winamp.marqueeLoop();
 if(skinUrl) {
     winamp.skinManager.setSkinByUrl(skinUrl);
