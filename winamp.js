@@ -5,6 +5,8 @@ function Winamp () {
     this.media = Media.init();
     this.skinManager = SkinManager;
     this.font = Font;
+    this.visualizerStyle = 'oscilloscope';
+    this.visualizer = Visualizer.init(document.getElementById('visualizer'));
 
     this.nodes = {
         'option': document.getElementById('option'),
@@ -18,6 +20,7 @@ function Winamp () {
         'songTitle': document.getElementById('song-title'),
         'time': document.getElementById('time'),
         'shadeTime': document.getElementById('shade-time'),
+        'visualizer': document.getElementById('visualizer'),
         'previous': document.getElementById('previous'),
         'play': document.getElementById('play'),
         'pause': document.getElementById('pause'),
@@ -104,7 +107,14 @@ function Winamp () {
         self.updateTime();
     });
 
+    this.media.addEventListener('visualizerupdate', function(bufferLength, dataArray) {
+        if(self.visualizerStyle == 'oscilloscope') {
+            self.visualizer.paintOscilloscopeFrame(bufferLength, dataArray);
+        }
+    });
+
     this.media.addEventListener('ended', function() {
+        self.visualizer.clear();
         self.setStatus('stop');
     });
 
@@ -129,6 +139,15 @@ function Winamp () {
     this.nodes.shadeTime.onclick = function() {
         self.nodes.time.classList.toggle('countdown');
         self.updateTime();
+    }
+
+    this.nodes.visualizer.onclick = function() {
+        if(self.visualizerStyle == false) {
+            self.visualizerStyle = 'oscilloscope';
+        } else if(self.visualizerStyle == 'oscilloscope') {
+            self.visualizerStyle = false;
+        }
+        self.visualizer.clear();
     }
 
     this.nodes.previous.onclick = function() {

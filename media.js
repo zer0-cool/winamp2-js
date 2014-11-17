@@ -1,13 +1,13 @@
 /* Emulate the native <audio> element with Web Audio API */
 Media = {
     _context: new(window.AudioContext || window.webkitAudioContext)(),
-    _visualizer: Visualizer.init(document.getElementById('visualization')),
     _source: null,
     _buffer: null,
     _callbacks: {
         waiting: function(){},
         playing: function(){},
         timeupdate: function(){},
+        visualizerupdate: function(){},
         ended: function(){}
     },
     _startTime: 0,
@@ -102,7 +102,6 @@ Media = {
     stop: function() {
         this._silence();
         this._position = 0;
-        this._callbacks.ended();
     },
 
     _silence: function() {
@@ -151,11 +150,14 @@ Media = {
         if(this._playing) {
             this._updatePosition();
             this._callbacks.timeupdate();
+
+            // _updatePosition might have stoped the playing
+            if(this._playing) {
+                this._analyser.getByteTimeDomainData(this._dataArray);
+                this._callbacks.visualizerupdate(this._bufferLength, this._dataArray);
+            }
         }
         window.requestAnimationFrame(this._draw.bind(this));
-
-        this._analyser.getByteTimeDomainData(this._dataArray);
-        this._visualizer.visualize(this._bufferLength, this._dataArray);
     },
 
     _updatePosition: function() {
