@@ -5,8 +5,8 @@ function Winamp () {
     this.media = Media.init();
     this.skinManager = SkinManager;
     this.font = Font;
-    this.visualizerStyle = 'oscilloscope';
     this.visualizer = Visualizer.init(document.getElementById('visualizer'));
+    this.visualizerStyle = this.visualizer.BAR;
 
     this.nodes = {
         'option': document.getElementById('option'),
@@ -108,9 +108,7 @@ function Winamp () {
     });
 
     this.media.addEventListener('visualizerupdate', function(bufferLength, dataArray) {
-        if(self.visualizerStyle == 'oscilloscope') {
-            self.visualizer.paintOscilloscopeFrame(bufferLength, dataArray);
-        }
+        self.visualizer.paintFrame(self.visualizerStyle, bufferLength, dataArray);
     });
 
     this.media.addEventListener('ended', function() {
@@ -142,10 +140,12 @@ function Winamp () {
     }
 
     this.nodes.visualizer.onclick = function() {
-        if(self.visualizerStyle == false) {
-            self.visualizerStyle = 'oscilloscope';
-        } else if(self.visualizerStyle == 'oscilloscope') {
-            self.visualizerStyle = false;
+        if(self.visualizerStyle == self.visualizer.NONE) {
+            self.visualizerStyle = self.visualizer.BAR;
+        } else if(self.visualizerStyle == self.visualizer.BAR) {
+            self.visualizerStyle = self.visualizer.OSCILLOSCOPE;
+        } else if(self.visualizerStyle == self.visualizer.OSCILLOSCOPE) {
+            self.visualizerStyle = self.visualizer.NONE;
         }
         self.visualizer.clear();
     }
